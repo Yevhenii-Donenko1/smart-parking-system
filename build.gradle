@@ -1,0 +1,92 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.2.5'
+    id 'io.spring.dependency-management' version '1.1.4'
+}
+
+group = 'com.parking'
+version = '1.0.0'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+// ── Integration Test source set ──────────────────────────────────────
+
+sourceSets {
+    integrationTest {
+        java.srcDir 'src/integrationTest/java'
+        resources.srcDir 'src/integrationTest/resources'
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+
+configurations {
+    integrationTestImplementation.extendsFrom implementation, runtimeOnly
+    integrationTestRuntimeOnly.extendsFrom runtimeOnly
+    integrationTestAnnotationProcessor.extendsFrom annotationProcessor
+}
+
+// ── Dependencies ─────────────────────────────────────────────────────
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+
+    runtimeOnly 'com.h2database:h2'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // Unit tests
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // Integration tests (Cucumber BDD)
+    integrationTestImplementation 'org.springframework.boot:spring-boot-starter-test'
+    integrationTestImplementation 'org.apache.httpcomponents.client5:httpclient5'
+    integrationTestImplementation 'io.cucumber:cucumber-java:7.15.0'
+    integrationTestImplementation 'io.cucumber:cucumber-spring:7.15.0'
+    integrationTestImplementation 'io.cucumber:cucumber-junit-platform-engine:7.15.0'
+    integrationTestImplementation 'org.junit.platform:junit-platform-suite'
+}
+
+// ── Tasks ────────────────────────────────────────────────────────────
+
+tasks.named('test') {
+    useJUnitPlatform()
+    description = 'Run unit tests.'
+}
+
+tasks.named('processIntegrationTestResources') {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+tasks.register('integrationTest', Test) {
+    description = 'Run Cucumber BDD integration tests.'
+    group = 'verification'
+
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+
+    useJUnitPlatform()
+
+    shouldRunAfter tasks.named('test')
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('integrationTest')
+}

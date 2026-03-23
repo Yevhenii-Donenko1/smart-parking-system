@@ -1,0 +1,690 @@
+{
+	"info": {
+		"_postman_id": "smart-parking-system-collection",
+		"name": "Smart Parking System API",
+		"description": "REST API for managing parking lots, vehicle check-in/check-out, and fee calculation.\n\nBase URL: http://localhost:8080\nSwagger UI: http://localhost:8080/swagger-ui/index.html",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "lotId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "levelId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "slotId",
+			"value": "1",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Admin - Parking Lots",
+			"item": [
+				{
+					"name": "Create Parking Lot",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('lotId', jsonData.id);",
+									"    pm.test('Lot created successfully', function () {",
+									"        pm.expect(jsonData.name).to.not.be.empty;",
+									"        pm.expect(jsonData.id).to.be.a('number');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Downtown Garage\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/lots",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "lots"]
+						},
+						"description": "Creates a new parking lot with a unique name."
+					},
+					"response": []
+				},
+				{
+					"name": "List All Parking Lots",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/lots",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "lots"]
+						},
+						"description": "Returns all parking lots with their levels and slots."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Parking Lot",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/lots/{{lotId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "lots", "{{lotId}}"]
+						},
+						"description": "Returns a single parking lot with its levels and slots."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Parking Lot",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/lots/{{lotId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "lots", "{{lotId}}"]
+						},
+						"description": "Deletes a parking lot. Fails if there are active parking sessions."
+					},
+					"response": []
+				}
+			],
+			"description": "CRUD operations for parking lots."
+		},
+		{
+			"name": "Admin - Levels",
+			"item": [
+				{
+					"name": "Add Level",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('levelId', jsonData.id);",
+									"    pm.test('Level added successfully', function () {",
+									"        pm.expect(jsonData.floorNumber).to.be.a('number');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"floorNumber\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/lots/{{lotId}}/levels",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "lots", "{{lotId}}", "levels"]
+						},
+						"description": "Adds a new floor level to the specified parking lot."
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Level",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/lots/{{lotId}}/levels/{{levelId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "lots", "{{lotId}}", "levels", "{{levelId}}"]
+						},
+						"description": "Removes a level from a parking lot. Fails if any slots are occupied."
+					},
+					"response": []
+				}
+			],
+			"description": "Manage levels within a parking lot."
+		},
+		{
+			"name": "Admin - Slots",
+			"item": [
+				{
+					"name": "Add Slot (COMPACT)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('slotId', jsonData.id);",
+									"    pm.test('Slot added successfully', function () {",
+									"        pm.expect(jsonData.slotType).to.eql('COMPACT');",
+									"        pm.expect(jsonData.status).to.eql('AVAILABLE');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"slotNumber\": 1,\n    \"slotType\": \"COMPACT\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/lots/{{lotId}}/levels/{{levelId}}/slots",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "lots", "{{lotId}}", "levels", "{{levelId}}", "slots"]
+						},
+						"description": "Adds a new parking slot. Slot types: MOTORCYCLE, COMPACT, LARGE, HANDICAPPED"
+					},
+					"response": []
+				},
+				{
+					"name": "Add Slot (LARGE)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"slotNumber\": 2,\n    \"slotType\": \"LARGE\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/lots/{{lotId}}/levels/{{levelId}}/slots",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "lots", "{{lotId}}", "levels", "{{levelId}}", "slots"]
+						},
+						"description": "Adds a LARGE parking slot."
+					},
+					"response": []
+				},
+				{
+					"name": "Add Slot (MOTORCYCLE)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"slotNumber\": 3,\n    \"slotType\": \"MOTORCYCLE\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/lots/{{lotId}}/levels/{{levelId}}/slots",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "lots", "{{lotId}}", "levels", "{{levelId}}", "slots"]
+						},
+						"description": "Adds a MOTORCYCLE parking slot."
+					},
+					"response": []
+				},
+				{
+					"name": "Add Slot (HANDICAPPED)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"slotNumber\": 4,\n    \"slotType\": \"HANDICAPPED\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/lots/{{lotId}}/levels/{{levelId}}/slots",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "lots", "{{lotId}}", "levels", "{{levelId}}", "slots"]
+						},
+						"description": "Adds a HANDICAPPED parking slot."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Slot Status (Maintenance)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"MAINTENANCE\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/lots/{{lotId}}/levels/{{levelId}}/slots/{{slotId}}/status",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "lots", "{{lotId}}", "levels", "{{levelId}}", "slots", "{{slotId}}", "status"]
+						},
+						"description": "Toggle slot between AVAILABLE and MAINTENANCE. Cannot set to OCCUPIED manually."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Slot Status (Available)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"AVAILABLE\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/lots/{{lotId}}/levels/{{levelId}}/slots/{{slotId}}/status",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "lots", "{{lotId}}", "levels", "{{levelId}}", "slots", "{{slotId}}", "status"]
+						},
+						"description": "Set slot back to AVAILABLE from MAINTENANCE."
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Slot",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/lots/{{lotId}}/levels/{{levelId}}/slots/{{slotId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "lots", "{{lotId}}", "levels", "{{levelId}}", "slots", "{{slotId}}"]
+						},
+						"description": "Removes a parking slot. Fails if the slot is currently occupied."
+					},
+					"response": []
+				}
+			],
+			"description": "Manage parking slots within levels."
+		},
+		{
+			"name": "Parking - Check-In / Check-Out",
+			"item": [
+				{
+					"name": "Check In (CAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.test('Check-in successful', function () {",
+									"        pm.expect(jsonData.ticketId).to.be.a('number');",
+									"        pm.expect(jsonData.licensePlate).to.eql('ABC-123');",
+									"        pm.expect(jsonData.slotType).to.be.a('string');",
+									"        pm.expect(jsonData.entryTime).to.not.be.empty;",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"licensePlate\": \"ABC-123\",\n    \"vehicleType\": \"CAR\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/parking/lots/{{lotId}}/check-in",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "parking", "lots", "{{lotId}}", "check-in"]
+						},
+						"description": "Check in a CAR. Assigns the nearest available compatible slot."
+					},
+					"response": []
+				},
+				{
+					"name": "Check In (MOTORCYCLE)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"licensePlate\": \"MOTO-001\",\n    \"vehicleType\": \"MOTORCYCLE\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/parking/lots/{{lotId}}/check-in",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "parking", "lots", "{{lotId}}", "check-in"]
+						},
+						"description": "Check in a MOTORCYCLE. Can use MOTORCYCLE, COMPACT, or LARGE slots."
+					},
+					"response": []
+				},
+				{
+					"name": "Check In (TRUCK)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"licensePlate\": \"TRUCK-001\",\n    \"vehicleType\": \"TRUCK\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/parking/lots/{{lotId}}/check-in",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "parking", "lots", "{{lotId}}", "check-in"]
+						},
+						"description": "Check in a TRUCK. Can only use LARGE slots."
+					},
+					"response": []
+				},
+				{
+					"name": "Check Out",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.test('Check-out successful with fee', function () {",
+									"        pm.expect(jsonData.ticketId).to.be.a('number');",
+									"        pm.expect(jsonData.fee).to.be.a('number');",
+									"        pm.expect(jsonData.durationHours).to.be.at.least(1);",
+									"        pm.expect(jsonData.exitTime).to.not.be.empty;",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"licensePlate\": \"ABC-123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/parking/lots/{{lotId}}/check-out",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "parking", "lots", "{{lotId}}", "check-out"]
+						},
+						"description": "Check out a vehicle. Calculates fee based on duration and vehicle type.\n\nRates: MOTORCYCLE=$1/hr, CAR=$2/hr, TRUCK=$3/hr (partial hours rounded up, min 1hr)"
+					},
+					"response": []
+				},
+				{
+					"name": "View Active Sessions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/parking/lots/{{lotId}}/sessions",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "parking", "lots", "{{lotId}}", "sessions"]
+						},
+						"description": "Returns all currently active parking sessions for the specified lot."
+					},
+					"response": []
+				}
+			],
+			"description": "Vehicle check-in, check-out, and session management.\n\nFee rates:\n- MOTORCYCLE: $1/hour\n- CAR: $2/hour\n- TRUCK: $3/hour\n\nSlot compatibility:\n- MOTORCYCLE: MOTORCYCLE, COMPACT, LARGE\n- CAR: COMPACT, LARGE, HANDICAPPED\n- TRUCK: LARGE only"
+		},
+		{
+			"name": "Edge Cases",
+			"item": [
+				{
+					"name": "Validation - Blank Name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Returns 400 for blank name', function () {",
+									"    pm.response.to.have.status(400);",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('name');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/lots",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "lots"]
+						},
+						"description": "Should return 400 - parking lot name is required."
+					},
+					"response": []
+				},
+				{
+					"name": "Lot Not Found",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Returns 404', function () {",
+									"    pm.response.to.have.status(404);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/lots/999",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "lots", "999"]
+						},
+						"description": "Should return 404 - parking lot not found."
+					},
+					"response": []
+				},
+				{
+					"name": "Check In - Already Parked",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Returns 409 Conflict', function () {",
+									"    pm.response.to.have.status(409);",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('already parked');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"licensePlate\": \"ABC-123\",\n    \"vehicleType\": \"CAR\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/parking/lots/{{lotId}}/check-in",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "parking", "lots", "{{lotId}}", "check-in"]
+						},
+						"description": "Should return 409 if vehicle is already parked. Run 'Check In (CAR)' first."
+					},
+					"response": []
+				},
+				{
+					"name": "Check Out - Not Parked",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Returns 404', function () {",
+									"    pm.response.to.have.status(404);",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('No active parking session');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"licensePlate\": \"GHOST-001\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/parking/lots/{{lotId}}/check-out",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "parking", "lots", "{{lotId}}", "check-out"]
+						},
+						"description": "Should return 404 for a vehicle that is not parked."
+					},
+					"response": []
+				},
+				{
+					"name": "Validation - Missing License Plate",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Returns 400 for missing license plate', function () {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"licensePlate\": \"\",\n    \"vehicleType\": \"CAR\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/parking/lots/{{lotId}}/check-in",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "parking", "lots", "{{lotId}}", "check-in"]
+						},
+						"description": "Should return 400 - license plate is required."
+					},
+					"response": []
+				}
+			],
+			"description": "Edge cases and error scenarios for testing error handling."
+		}
+	]
+}
